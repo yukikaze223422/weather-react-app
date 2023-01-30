@@ -1,19 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
-import {
-  Badge,
-  Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  HStack,
-  Select,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Button, Divider, Heading, Select, VStack } from "@chakra-ui/react";
 import { SunIcon } from "@chakra-ui/icons";
 import { SubmitHandler, useForm } from "react-hook-form";
 import Geocode from "react-geocode";
+import PullDown from "./components/pullDown";
 
 function App() {
   //バリデーション（react-hook-form）
@@ -23,12 +15,13 @@ function App() {
     formState: { errors },
   } = useForm<any>();
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [date, setDate] = useState<any>([]);
   const [dateValue, setDateValue] = useState<any>([]);
   const [prefectures, setPrefectures] = useState<any>([]);
   const [prefCodes, setPrefCodes] = useState<any>([]);
   const [prefecture, setPrefecture] = useState<string>();
-  const [region, setRegion] = useState<string>();
+  //const [region, setRegion] = useState<string>();
   //const [lat, setLat] = useState<number | null>(null);
   //const [lng, setLng] = useState<number | null>(null);
   const [weather, setWeather] = useState<any>([]);
@@ -88,15 +81,13 @@ function App() {
       setDate(dates);
       setDateValue(dateValues);
     }
-    console.log(date);
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onChangePrefecture: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
+  const onChangePrefecture: React.ChangeEventHandler<HTMLSelectElement> = async (e) => {
     const prefCode = e.target.value.split(",");
     //RESAS-APIより都道府県データを取得し、都道府県とprefCodeに対応した値を格納
-    axios
+    await axios
       .get(`https://opendata.resas-portal.go.jp/api/v1/cities?prefCode=${prefCode[0]}`, {
         headers: { "X-API-KEY": process.env.REACT_APP_RESAS_KEY },
       })
@@ -110,6 +101,7 @@ function App() {
   };
 
   const onChangeCity: React.ChangeEventHandler<HTMLSelectElement> = async (e) => {
+    setIsLoading(true);
     //都道府県＋市区町村で結合した文字列をもとに緯度・経度を取得し天気情報をセット
     Geocode.setApiKey(process.env.REACT_APP_GOOGLEMAP_KEY ?? "");
     await Geocode.fromAddress(prefecture + e.target.value).then(
@@ -125,6 +117,9 @@ function App() {
           })
           .catch((error) => {
             console.log(error);
+          })
+          .finally(() => {
+            setIsLoading(false);
           });
       },
       (error) => {
@@ -143,101 +138,93 @@ function App() {
   };
 
   return (
-    <VStack>
-      {/* 日時選択欄 */}
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <FormControl mb={4} isInvalid={errors.date ? true : false}>
-          <HStack mb={3}>
-            <Badge variant="solid" colorScheme="red">
-              必須
-            </Badge>
-            <FormLabel fontWeight="bold" color="blue.400">
-              日付
-            </FormLabel>
-          </HStack>
-          <Select
-            id="date"
-            placeholder="日付を選択"
-            w="100%"
-            {...register("date", {
-              required: "日付を選択してください",
-            })}
-          >
-            <option value={dateValue[0]}>{date[0]}</option>
-            <option value={dateValue[1]}>{date[1]}</option>
-            <option value={dateValue[2]}>{date[2]}</option>
-            <option value={dateValue[3]}>{date[3]}</option>
-            <option value={dateValue[4]}>{date[4]}</option>
-          </Select>
-          <FormErrorMessage>{errors.date?.message?.toString()}</FormErrorMessage>
-        </FormControl>
+    <VStack h="100vh" bg="blue.100">
+      <Box bg="white" w="md" p={4} borderRadius="md" shadow="md">
+        <Heading as="h1" size="lg" textAlign="center">
+          条件を選択
+        </Heading>
+        <Divider my={4} />
+        {/* 日時選択欄 */}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <PullDown messageName={errors.date} pullDownTitle="日付">
+            <Select
+              id="date"
+              placeholder="日付を選択"
+              w="100%"
+              {...register("date", {
+                required: "日付を選択してください",
+              })}
+            >
+              {Array(5)
+                .fill(null)
+                .map((_, i) => {
+                  return (
+                    <option key={i} value={dateValue[i]}>
+                      {date[i]}
+                    </option>
+                  );
+                })}
+            </Select>
+          </PullDown>
 
-        {/* 都道府県選択欄 */}
-        <FormControl mb={4} isInvalid={errors.prefecture ? true : false}>
-          <HStack mb={3}>
-            <Badge variant="solid" colorScheme="red">
-              必須
-            </Badge>
-            <FormLabel fontWeight="bold" color="blue.400">
-              都道府県
-            </FormLabel>
-          </HStack>
-          <Select
-            id="prefecture"
-            placeholder="都道府県を選択"
-            w="100%"
-            {...register("prefecture", {
-              required: "都道府県を選択してください",
-              onChange: onChangePrefecture,
-            })}
-          >
-            {prefectures.result?.map((prefecture: any) => {
-              return (
-                <option
-                  key={prefecture.prefCode}
-                  value={prefecture.prefCode + "," + prefecture.prefName}
-                >
-                  {prefecture.prefName}
-                </option>
-              );
-            })}
-          </Select>
-          <FormErrorMessage>{errors.prefecture?.message?.toString()}</FormErrorMessage>
-        </FormControl>
+          {/* 都道府県選択欄 */}
+          <PullDown messageName={errors.prefecture} pullDownTitle="都道府県">
+            <Select
+              id="prefecture"
+              placeholder="都道府県を選択"
+              w="100%"
+              {...register("prefecture", {
+                required: "都道府県を選択してください",
+                onChange: onChangePrefecture,
+              })}
+            >
+              {prefectures.result?.map((prefecture: any) => {
+                return (
+                  <option
+                    key={prefecture.prefCode}
+                    value={prefecture.prefCode + "," + prefecture.prefName}
+                  >
+                    {prefecture.prefName}
+                  </option>
+                );
+              })}
+            </Select>
+          </PullDown>
 
-        {/* 市区町村選択欄 */}
-        <FormControl mb={4} isInvalid={errors.city ? true : false}>
-          <HStack mb={3}>
-            <Badge variant="solid" colorScheme="red">
-              必須
-            </Badge>
-            <FormLabel fontWeight="bold" color="blue.400">
-              市区町村
-            </FormLabel>
-          </HStack>
-          <Select
-            id="city"
-            placeholder="市区町村を選択"
+          {/* 市区町村選択欄 */}
+          <PullDown messageName={errors.city} pullDownTitle="市区町村">
+            <Select
+              id="city"
+              placeholder="市区町村を選択"
+              w="100%"
+              {...register("city", {
+                required: "市区町村を選択してください",
+                onChange: onChangeCity,
+              })}
+            >
+              {prefCodes.result?.map((prefCode: any) => {
+                return (
+                  <option key={prefCode.cityCode} value={prefCode.cityName}>
+                    {prefCode.cityName}
+                  </option>
+                );
+              })}
+            </Select>
+          </PullDown>
+
+          {/* 確定ボタン */}
+          <Button
+            type="submit"
+            leftIcon={<SunIcon />}
             w="100%"
-            {...register("city", {
-              required: "市区町村を選択してください",
-              onChange: onChangeCity,
-            })}
+            colorScheme="blue"
+            variant="solid"
+            isLoading={isLoading}
           >
-            {prefCodes.result?.map((prefCode: any) => {
-              return (
-                <option key={prefCode.cityCode} value={prefCode.cityName}>
-                  {prefCode.cityName}
-                </option>
-              );
-            })}
-          </Select>
-          <FormErrorMessage>{errors.city?.message?.toString()}</FormErrorMessage>
-        </FormControl>
-        <Button type="submit" leftIcon={<SunIcon />} colorScheme="blue" variant="solid">
-          天気チェック
-        </Button>
-      </form>
+            天気チェック
+          </Button>
+        </form>
+      </Box>
     </VStack>
   );
 }
