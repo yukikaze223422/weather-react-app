@@ -127,9 +127,9 @@ function App() {
     setIsLoading(true);
     //console.log(data);
     //const resultRegion = data.prefecture.split(",")[1] + data.city;
-    //const resultDate = data.date.split(",")[0];
+    const resultDate = data.date.split(",")[0];
     //setRegion(resultRegion);
-    //setSelectDate(resultDate);
+    setSelectDate(resultDate);
     /*     const weatheraaa = [
       weather.list.dt_txt.slice(11, 16),
       weather.main.temp,
@@ -196,11 +196,15 @@ function App() {
                   onChange: onChangeDate,
                 })}
               >
-                <option value={dateValue[0]}>{date[0]}</option>
-                <option value={dateValue[1]}>{date[1]}</option>
-                <option value={dateValue[2]}>{date[2]}</option>
-                <option value={dateValue[3]}>{date[3]}</option>
-                <option value={dateValue[4]}>{date[4]}</option>
+                {Array(5)
+                  .fill(null)
+                  .map((_, i) => {
+                    return (
+                      <option key={i} value={i + "," + dateValue[i]}>
+                        {date[i]}
+                      </option>
+                    );
+                  })}
               </Select>
             </PullDown>
 
