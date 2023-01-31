@@ -17,6 +17,7 @@ type Weather = {
   timeText: string;
   temperature: string;
   weather: string;
+  icon: string;
 };
 
 function App() {
@@ -29,7 +30,7 @@ function App() {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [date, setDate] = useState<any>([]);
-  const [selectDate, setSelectDate] = useState<any>();
+  const [selectDateNumber, setSelectDateNumber] = useState<any>();
   const [dateValue, setDateValue] = useState<any>([]);
   const [prefectures, setPrefectures] = useState<any>([]);
   const [prefCodes, setPrefCodes] = useState<any>([]);
@@ -37,7 +38,7 @@ function App() {
   const [region, setRegion] = useState<string>();
   //const [lat, setLat] = useState<number | null>(null);
   //const [lng, setLng] = useState<number | null>(null);
-  const [weather, setWeather] = useState<any>([]);
+  //const [weather, setWeather] = useState<any>([]);
   //const [selectWeather, setSelectWeather] = useState<any>([]);
   const [weatherList, setWeatherList] = useState<Weather[]>([]);
 
@@ -99,10 +100,6 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const onChangeDate: React.ChangeEventHandler<HTMLSelectElement> = (e) => {
-    setSelectDate(e.target.value);
-  };
-
   const onChangePrefecture: React.ChangeEventHandler<HTMLSelectElement> = async (e) => {
     const prefCode = e.target.value.split(",");
     //RESAS-APIより都道府県データを取得し、都道府県とprefCodeに対応した値を格納
@@ -127,9 +124,9 @@ function App() {
     setIsLoading(true);
     //console.log(data);
     //const resultRegion = data.prefecture.split(",")[1] + data.city;
-    const resultDate = data.date.split(",")[0];
     //setRegion(resultRegion);
-    setSelectDate(resultDate);
+    setSelectDateNumber(data.date.split(",")[0]);
+    const selectDate = data.date.split(",")[1];
     /*     const weatheraaa = [
       weather.list.dt_txt.slice(11, 16),
       weather.main.temp,
@@ -149,7 +146,23 @@ function App() {
             const filterWeather = Object.values(results.data.list).filter((item: any) => {
               return item.dt_txt?.indexOf(selectDate) >= 0;
             });
-            setWeather(filterWeather);
+            const list: Weather[] = [];
+            filterWeather.forEach((weather: any) => {
+              if (
+                weather?.dt_txt &&
+                weather?.main?.temp &&
+                weather?.weather[0]?.main &&
+                weather?.weather[0]?.icon
+              ) {
+                list.push({
+                  timeText: weather.dt_txt.slice(11, 16),
+                  temperature: weather.main.temp,
+                  weather: weather.weather[0].main,
+                  icon: weather.weather[0].icon,
+                });
+              }
+            });
+            setWeatherList(list);
           })
           .catch((error) => {
             console.log(error);
@@ -162,19 +175,7 @@ function App() {
         console.error(error);
       }
     );
-
-    for (let i = 0; i < weather.length; i++) {
-      setWeatherList([
-        ...weather,
-        {
-          timeText: weather[i].dt_txt.slice(11, 16),
-          temperature: weather[i].main.temp,
-          weather: weather[i].weather[0].main,
-        },
-      ]);
-    }
   };
-  console.log(weather);
 
   return (
     <Flex align="center" justify="center" height="auto" bg="blue.100">
@@ -193,7 +194,6 @@ function App() {
                 w="100%"
                 {...register("date", {
                   required: "日付を選択してください",
-                  onChange: onChangeDate,
                 })}
               >
                 {Array(5)
@@ -274,19 +274,17 @@ function App() {
           </Heading>
           <Divider my={4} />
           <Text fontSize="lg" fontWeight="bold">
-            {date[selectDate]}
+            {date[selectDateNumber]}
           </Text>
-          {Array(weather.length)
+          {Array(weatherList.length)
             .fill(null)
             .map((_, i) => {
               return (
                 <Box key={i}>
-                  <Image
-                    src={`http://openweathermap.org/img/w/${weather[i]?.weather[0].icon}.png`}
-                  />
-                  <Text>時間：{weather[i]?.dt_txt.slice(11, 16)}</Text>
-                  <Text>天気：{weather[i]?.weather[0].main}</Text>
-                  <Text>気温：{weather[i]?.main.temp}℃</Text>
+                  <Image src={`http://openweathermap.org/img/w/${weatherList[i]?.icon}.png`} />
+                  <Text>時間：{weatherList[i]?.timeText}</Text>
+                  <Text>天気：{weatherList[i]?.weather}</Text>
+                  <Text>気温：{weatherList[i]?.temperature}℃</Text>
                   <Divider my={2} borderColor="blue.200" />
                 </Box>
               );
