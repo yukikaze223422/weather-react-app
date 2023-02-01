@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "./App.css";
-import { Box, Button, Divider, Flex, Heading, HStack, Image, Select, Text } from "@chakra-ui/react";
-import { SunIcon } from "@chakra-ui/icons";
+import { Box, Button, Divider, Flex, Heading, Image, Select, Stack, Text } from "@chakra-ui/react";
+import { SunIcon, SmallCloseIcon } from "@chakra-ui/icons";
 import { SubmitHandler, useForm } from "react-hook-form";
 import Geocode from "react-geocode";
 import PullDown from "./components/pullDown";
+import { serverTimestamp, doc, setDoc, getDoc } from "firebase/firestore";
+import { db } from "./firebase";
 
 type Inputs = {
   date: string;
@@ -29,6 +31,7 @@ function App() {
   } = useForm<Inputs>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [weatherShow, setWeatherShow] = useState<boolean>(false);
   const [date, setDate] = useState<any>([]);
   const [selectDateNumber, setSelectDateNumber] = useState<any>();
   const [dateValue, setDateValue] = useState<any>([]);
@@ -36,10 +39,7 @@ function App() {
   const [prefCodes, setPrefCodes] = useState<any>([]);
   const [prefecture, setPrefecture] = useState<string>();
   const [region, setRegion] = useState<string>();
-  //const [lat, setLat] = useState<number | null>(null);
-  //const [lng, setLng] = useState<number | null>(null);
-  //const [weather, setWeather] = useState<any>([]);
-  //const [selectWeather, setSelectWeather] = useState<any>([]);
+  const [regionShow, setRegionShow] = useState<string>();
   const [weatherList, setWeatherList] = useState<Weather[]>([]);
 
   useEffect(() => {
@@ -117,25 +117,33 @@ function App() {
   };
 
   const onChangeCity: React.ChangeEventHandler<HTMLSelectElement> = async (e) => {
+    //都道府県＋市区町村
     setRegion(prefecture + e.target.value);
   };
 
   const onSubmit: SubmitHandler<any> = async (data) => {
+    //「天気チェック」ボタンのローディング開始判定
     setIsLoading(true);
-    //console.log(data);
-    //const resultRegion = data.prefecture.split(",")[1] + data.city;
-    //setRegion(resultRegion);
+
     setSelectDateNumber(data.date.split(",")[0]);
+    //yyyy-mm-dd
     const selectDate = data.date.split(",")[1];
-    /*     const weatheraaa = [
-      weather.list.dt_txt.slice(11, 16),
-      weather.main.temp,
-      weather.weather[0].main,
-    ]; */
+
+    //都道府県＋市区町村＋yyyy-mm-dd
+    const document = region + selectDate;
+
+    //Firebase firestore
+    const docRef = doc(db, "weatherData", document);
+    const docSnap = await getDoc(docRef);
+
+    //画面表示用（地域）
+    setRegionShow(region);
+
     //都道府県＋市区町村で結合した文字列をもとに緯度・経度を取得し天気情報をセット
     Geocode.setApiKey(process.env.REACT_APP_GOOGLEMAP_KEY ?? "");
     await Geocode.fromAddress(region ?? "").then(
       (response) => {
+        //都道府県＋市区町村をもとに緯度・経度を取得
         const { lat, lng } = response.results[0].geometry.location;
         axios
           .get(
@@ -146,6 +154,8 @@ function App() {
             const filterWeather = Object.values(results.data.list).filter((item: any) => {
               return item.dt_txt?.indexOf(selectDate) >= 0;
             });
+
+            //フィルターしたデータから必要な情報のみ抽出し格納
             const list: Weather[] = [];
             filterWeather.forEach((weather: any) => {
               if (
@@ -162,13 +172,27 @@ function App() {
                 });
               }
             });
-            setWeatherList(list);
+
+            //firestoreのドキュメント有無判定（ない場合はAPIから天気情報呼び出し）
+            if (!docSnap.exists()) {
+              setWeatherList(list);
+
+              setDoc(doc(db, "weatherData", document), {
+                weather: list,
+                searchTime: serverTimestamp(),
+              });
+              console.log("APIから取得しました。");
+            } else {
+              console.log("firestoreから取得しました。");
+              setWeatherList(docSnap.data().weather);
+            }
           })
           .catch((error) => {
             console.log(error);
           })
           .finally(() => {
             setIsLoading(false);
+            setWeatherShow(true);
           });
       },
       (error) => {
@@ -178,9 +202,9 @@ function App() {
   };
 
   return (
-    <Flex align="center" justify="center" height="auto" bg="blue.100">
-      <HStack>
-        <Box bg="white" w="md" p={4} borderRadius="md" shadow="md">
+    <Flex align="center" justify="center" bg="blue.100" py={10}>
+      <Stack>
+        <Box bg="white" p={4} w={{ base: "100%", md: "md" }} borderRadius="md" shadow="md">
           <Heading as="h1" size="lg" textAlign="center">
             条件を選択
           </Heading>
@@ -268,30 +292,51 @@ function App() {
         </Box>
 
         {/* 天気予報詳細 */}
-        <Box bg="white" w="md" p={4} borderRadius="md" shadow="md">
-          <Heading as="h1" size="lg" textAlign="center">
-            {region}の天気
-          </Heading>
-          <Divider my={4} />
-          <Text fontSize="lg" fontWeight="bold">
-            {date[selectDateNumber]}
-          </Text>
-          {Array(weatherList.length)
-            .fill(null)
-            .map((_, i) => {
-              return (
-                <Box key={i}>
-                  <Image src={`http://openweathermap.org/img/w/${weatherList[i]?.icon}.png`} />
-                  <Text>時間：{weatherList[i]?.timeText}</Text>
-                  <Text>天気：{weatherList[i]?.weather}</Text>
-                  <Text>気温：{weatherList[i]?.temperature}℃</Text>
-                  <Divider my={2} borderColor="blue.200" />
-                </Box>
-              );
-            })}
-          <Text fontSize="sm">※３時間ごとの天気予報です。</Text>
-        </Box>
-      </HStack>
+        {weatherShow ? (
+          <Box
+            bg="white"
+            p={4}
+            w={{ base: "100%", md: "md" }}
+            borderRadius="md"
+            shadow="md"
+            boxSizing="border-box"
+          >
+            <Heading as="h1" size="lg" textAlign="center">
+              {regionShow}の天気
+            </Heading>
+            <Divider my={4} />
+            <Text fontSize="lg" fontWeight="bold">
+              {date[selectDateNumber]}
+            </Text>
+            {Array(weatherList.length)
+              .fill(null)
+              .map((_, i) => {
+                return (
+                  <Box key={i}>
+                    <Image src={`http://openweathermap.org/img/w/${weatherList[i]?.icon}.png`} />
+                    <Text>時間：{weatherList[i]?.timeText}</Text>
+                    <Text>天気：{weatherList[i]?.weather}</Text>
+                    <Text>気温：{weatherList[i]?.temperature}℃</Text>
+                    <Divider my={2} borderColor="blue.200" />
+                  </Box>
+                );
+              })}
+            <Text fontSize="sm">※３時間ごとの天気予報です。</Text>
+            {/* 閉じるボタン */}
+            <Button
+              type="button"
+              leftIcon={<SmallCloseIcon />}
+              mt={4}
+              w="100%"
+              colorScheme="red"
+              variant="solid"
+              onClick={() => setWeatherShow(false)}
+            >
+              閉じる
+            </Button>
+          </Box>
+        ) : null}
+      </Stack>
     </Flex>
   );
 }
