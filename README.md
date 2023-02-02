@@ -13,7 +13,7 @@
 
 # アプリ URL
 
-[weather-react-dn0hxa8vg-yukikaze223422.vercel.app/](https://weather-react-dn0hxa8vg-yukikaze223422.vercel.app/)
+[weather-react-app-gamma.vercel.app/](https://weather-react-app-gamma.vercel.app/)
 
 <br>
 
@@ -63,7 +63,7 @@ APIをあまり触れたことがなかったためJSONデータの扱い方や�
 <br>
 
 # テーブル構成
-### WeaherDataテーブル（collection）
+### WeaherDataテーブル
 - ドキュメント
   - 日付＋都道府県＋市区町村<br>
 - フィールド
