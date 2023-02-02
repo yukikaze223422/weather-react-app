@@ -72,7 +72,7 @@ APIをあまり触れたことがなかったためJSONデータの扱い方や�
   - weather（天気情報）
     - icon（気候アイコン）
     - temperature（気温）
-    - timeText（日付 yyyy-mm-dd）
+    - timeText（時間）
     - weather（気候）
     
 ![テーブル画像](https://github.com/yukikaze223422/weather-react-app/blob/main/table.png)
