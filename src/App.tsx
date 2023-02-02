@@ -8,6 +8,7 @@ import Geocode from "react-geocode";
 import PullDown from "./components/pullDown";
 import { serverTimestamp, doc, setDoc, getDoc } from "firebase/firestore";
 import { db } from "./firebase";
+import { useAlertMessage } from "./hooks/useAlertMessage";
 
 type Inputs = {
   date: string;
@@ -23,6 +24,9 @@ type Weather = {
 };
 
 function App() {
+  //アラートメッセージ
+  const { showMessage } = useAlertMessage();
+
   //バリデーション（react-hook-form）
   const {
     register,
@@ -181,13 +185,14 @@ function App() {
                 weather: list,
                 searchTime: serverTimestamp(),
               });
-              console.log("APIから取得しました。");
+              showMessage({ title: "APIから取得しました。", status: "success" });
             } else {
-              console.log("firestoreから取得しました。");
+              showMessage({ title: "Firebaseから取得しました。", status: "success" });
               setWeatherList(docSnap.data().weather);
             }
           })
           .catch((error) => {
+            showMessage({ title: "取得に失敗しました。", status: "error" });
             console.log(error);
           })
           .finally(() => {
@@ -202,7 +207,7 @@ function App() {
   };
 
   return (
-    <Flex align="center" justify="center" bg="blue.100" py={10}>
+    <Flex align="center" justify="center" bg="blue.50" py={10} h={!weatherShow ? "100vh" : "auto"}>
       <Stack>
         <Box bg="white" p={4} w={{ base: "100%", md: "md" }} borderRadius="md" shadow="md">
           <Heading as="h1" size="lg" textAlign="center">
@@ -305,9 +310,13 @@ function App() {
               {regionShow}の天気
             </Heading>
             <Divider my={4} />
+
+            {/* 選択日付表示 */}
             <Text fontSize="lg" fontWeight="bold">
               {date[selectDateNumber]}
             </Text>
+
+            {/* 天気情報表示 */}
             {Array(weatherList.length)
               .fill(null)
               .map((_, i) => {
@@ -322,6 +331,7 @@ function App() {
                 );
               })}
             <Text fontSize="sm">※３時間ごとの天気予報です。</Text>
+
             {/* 閉じるボタン */}
             <Button
               type="button"
