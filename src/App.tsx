@@ -207,7 +207,7 @@ function App() {
   };
 
   return (
-    <Flex align="center" justify="center" bg="blue.50" py={10} h={!weatherShow ? "100vh" : "auto"}>
+    <Flex justify="center" bg="blue.50" py={10} h={!weatherShow ? "100vh" : "auto"}>
       <Stack>
         <Box bg="white" p={4} w={{ base: "100%", md: "md" }} borderRadius="md" shadow="md">
           <Heading as="h1" size="lg" textAlign="center">

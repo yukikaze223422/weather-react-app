@@ -7,7 +7,7 @@ const Header = () => {
       <Container p={0} borderBottom="1px" borderColor="gray.200" maxW="100%">
         <Container bg="blue.500" maxW="100%" p={1}>
           <Text color="white" fontSize="sm" align="center">
-            天気予報を簡単にチェックできるアプリ
+            天気予報を簡単にチェックできるオリジナルアプリ
           </Text>
         </Container>
         <Container bg="white" py={2} px={4} maxW="100%" textAlign="center">
