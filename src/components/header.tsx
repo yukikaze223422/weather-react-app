@@ -1,5 +1,5 @@
 import { SunIcon } from "@chakra-ui/icons";
-import { Container, Text, Flex, Image } from "@chakra-ui/react";
+import { Container, Text } from "@chakra-ui/react";
 
 const Header = () => {
   return (
