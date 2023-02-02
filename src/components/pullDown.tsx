@@ -1,4 +1,4 @@
-import { Badge, FormControl, FormErrorMessage, FormLabel, HStack, Select } from "@chakra-ui/react";
+import { Badge, FormControl, FormErrorMessage, FormLabel, HStack } from "@chakra-ui/react";
 import { ReactNode } from "react";
 
 type Props = {
