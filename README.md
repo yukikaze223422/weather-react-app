@@ -1,7 +1,7 @@
 # アプリケーション名
 
 ### WeatherChecker（ウェザーチェッカー）
-![アプリ画像](https://github.com/yukikaze223422/portfolio-app/blob/main/WeatherChecker.png)
+![アプリ画像](https://github.com/yukikaze223422/weather-react-app/blob/main/WeatherChecker.png)
 
 <br>
 
@@ -74,7 +74,7 @@ APIをあまり触れたことがなかったためJSONデータの扱い方や�
     - timeText（日付 yyyy-mm-dd）
     - weather（気候）
     
-![テーブル画像](https://github.com/yukikaze223422/portfolio-app/blob/main/table.png)
+![テーブル画像](https://github.com/yukikaze223422/weather-react-app/blob/main/table.png)
 
 
 <br>
