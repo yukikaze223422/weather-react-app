@@ -1,46 +1,111 @@
-# Getting Started with Create React App
+# アプリケーション名
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### WeatherChecker（ウェザーチェッカー）
+![アプリ画像](https://github.com/yukikaze223422/portfolio-app/blob/main/WeatherChecker.png)
 
-## Available Scripts
+<br>
 
-In the project directory, you can run:
+# アプリケーション概要
 
-### `npm start`
+旅行に行く人などが、直近５日間の天気をすぐに確認することができるアプリです。
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+<br>
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+# アプリ URL
 
-### `npm test`
+[weather-react-dn0hxa8vg-yukikaze223422.vercel.app/](https://weather-react-dn0hxa8vg-yukikaze223422.vercel.app/)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+<br>
 
-### `npm run build`
+# アプリを作成して学んだこと
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+APIをあまり触れたことがなかったためJSONデータの扱い方や呼び出し方などを学んだことで知識を増やすことがができました。<br>
+また、インターネットの情報が少ない中で開発したため、ポートフォリオと違ったプログラムロジックを深く考えるきっかけとなり成長できる良い機会となりました。
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+<br>
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# 利用方法
 
-### `npm run eject`
+1. 日付を選択
+   
+2. 都道府県を選択
+   
+3. 市区町村を選択
+   
+4. 「天気チェック」ボタンを押下
+   - 過去に同条件で検索した天気情報はFirebaseから読み込まれる。（初回はAPIから読み込み）
+   - API or Firebaseのどちらから読み込んだかわかるアラートメッセージを表示
+   
+5. 条件に該当する３時間ごとの天気、気温が表示
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+<br>
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# 開発環境
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+- フロントエンド
+  - React(v18.2.0)
+  - TypeScript
+  - Chakra UI(v2.4.9)
+- バックエンド
+  - Firebase (v9.16.0)
+- API
+  - RESAS-API
+  - Geocoding API 
+  - 5 Day / 3 Hour Forecast
+- ライブラリ
+  - axios
+  - react-hook-form
+  - react-helmet
+  - react-icons
+- その他
+  - Vercel
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+<br>
 
-## Learn More
+# テーブル構成
+### WeaherDataテーブル（collection）
+- ドキュメント
+  - 日付＋都道府県＋市区町村<br>
+- フィールド
+  - searchTime（追加された時間）
+  - weather（天気情報）
+    - icon（気候アイコン）
+    - temperature（気温）
+    - timeText（日付 yyyy-mm-dd）
+    - weather（気候）
+    
+![テーブル画像](https://github.com/yukikaze223422/portfolio-app/blob/main/table.png)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+<br>
+
+# 工夫した点
+
+### 1. 都道府県と市区町村の連動
+
+都道府県のプルダウンを選択すると、それに対応した市区町村が表示されるようにすることでユーザーが簡単に選択できるように対応<br>
+
+<br>
+
+### 2. ユーザー目線のレイアウト
+
+極力、ユーザーに対してわかりやすいような配置にしたりや必要最低限の情報を提供することで見栄えをよくしました。
+
+<br>
+
+# 苦労した点
+
+### 1. JSONデータの扱い
+私自身がAPIにあまり触れたことがなかったため、出力されたJSONデータを必要なデータだけを取り出して格納や表示をさせることに苦労しました。
+また、API中心のアプリとなるのでどのAPIをどこで使うのかという細かい調整を意識してプログラムを作りました。
+
+
+<br>
+
+### 2. Firebaseとの連携
+
+ポートフォリオ作成でFirebaseは使ったことはあったのですが、同一条件だった場合はFirebaseからそれ以外はAPIから呼び出すといった分岐が思ったより苦労しました。
+前述したJSONデータの扱いの関係でAPIから格納したデータとFirebaseで同じオブジェクト配列の構造にしないといけなかったのが苦労した１番の原因でした。
+今回のアプリ作成で、苦手な部分が明確に分かったためそこを重点的に学習していこうと考えています。
+
+<br>
