@@ -177,7 +177,7 @@ function App() {
               }
             });
 
-            //firestoreのドキュメント有無判定（ない場合はAPIから天気情報呼び出し）
+            //firestoreのドキュメント有無判定（ある場合はfirestoreから、ない場合はAPIから天気情報呼び出し）
             if (!docSnap.exists()) {
               setWeatherList(list);
 
@@ -187,8 +187,8 @@ function App() {
               });
               showMessage({ title: "APIから取得しました。", status: "success" });
             } else {
-              showMessage({ title: "Firebaseから取得しました。", status: "success" });
               setWeatherList(docSnap.data().weather);
+              showMessage({ title: "Firebaseから取得しました。", status: "success" });
             }
           })
           .catch((error) => {
